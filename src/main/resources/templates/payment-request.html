@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NICEPAY PAY REQUEST(UTF-8)</title>
+  <meta charset="utf-8">
+  <style>
+    html, body {height: 100%;}
+    form {overflow: hidden;}
+  </style>
+  <script src="https://pg-web.nicepay.co.kr/v3/common/js/nicepay-pgweb.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    // 결제창 최초 요청 시 실행됩니다.
+    function nicepayStart(){
+      goPay(document.payForm);
+    }
+
+    // [PC 결제창 전용] 결제 최종 요청 시 실행됩니다.
+    function nicepaySubmit(){
+      document.payForm.submit();
+    }
+
+    // [PC 결제창 전용] 결제창 종료 함수
+    function nicepayClose(){
+      alert("결제가 취소 되었습니다");
+    }
+
+    // /payments/info API 호출 및 form 데이터 채우기
+    async function fetchPaymentInfo() {
+      try {
+        const response = await fetch('/payments/info'); // API 호출
+        if (!response.ok) {
+          throw new Error(`Error fetching payment info: ${response.statusText}`);
+        }
+        const data = await response.json();
+        console.log(data);
+
+        // API 응답 데이터를 form 필드에 채우기
+        document.payForm.PayMethod.value = data.pay_method || 'CARD';
+        document.payForm.GoodsName.value = data.goods_name || '';
+        document.payForm.Amt.value = data.amt || '';
+        document.payForm.MID.value = data.merchant_id || '';
+        document.payForm.Moid.value = data.moid || '';
+        document.payForm.BuyerName.value = data.buyer_name || '';
+        document.payForm.BuyerEmail.value = data.buyer_email || '';
+        document.payForm.BuyerTel.value = data.buyer_tel || '';
+        document.payForm.ReturnURL.value = data.return_url || '';
+        document.payForm.EdiDate.value = data.edi_date || '';
+        document.payForm.SignData.value = data.sign_data || '';
+
+        document.payForm.VbankExpDate.value = data.vbankExpDate || '';
+      } catch (error) {
+        console.error('Failed to fetch payment info:', error);
+      }
+    }
+
+    // 페이지 로드 시 /payments/info API 호출
+    window.onload = fetchPaymentInfo;
+  </script>
+</head>
+<body>
+<form name="payForm" method="post" action="/payments/authReq" accept-charset="euc-kr">
+  <table>
+    <tr>
+      <th>PayMethod</th>
+      <td><input type="text" name="PayMethod" value=""></td>
+    </tr>
+    <tr>
+      <th>GoodsName</th>
+      <td><input type="text" name="GoodsName" value=""></td>
+    </tr>
+    <tr>
+      <th>Amt</th>
+      <td><input type="text" name="Amt" value=""></td>
+    </tr>
+    <tr>
+      <th>MID</th>
+      <td><input type="text" name="MID" value=""></td>
+    </tr>
+    <tr>
+      <th>Moid</th>
+      <td><input type="text" name="Moid" value=""></td>
+    </tr>
+    <tr>
+      <th>BuyerName</th>
+      <td><input type="text" name="BuyerName" value=""></td>
+    </tr>
+    <tr>
+      <th>BuyerEmail</th>
+      <td><input type="text" name="BuyerEmail" value=""></td>
+    </tr>
+    <tr>
+      <th>BuyerTel</th>
+      <td><input type="text" name="BuyerTel" value=""></td>
+    </tr>
+    <tr>
+      <th>ReturnURL [Mobile only]</th>
+      <td><input type="text" name="ReturnURL" value=""></td>
+    </tr>
+    <tr>
+      <th>Virtual Account Expiration Date(YYYYMMDD)</th>
+      <td><input type="text" name="VbankExpDate" value=""></td>
+    </tr>
+
+    <input type="hidden" name="NpLang" value="KO"/> <!-- EN:English, CN:Chinese, KO:Korean -->
+    <input type="hidden" name="GoodsCl" value="1"/> <!-- products(1), contents(0)) -->
+    <input type="hidden" name="TransType" value="0"/>	<!-- USE escrow false(0)/true(1) -->
+    <input type="hidden" name="CharSet" value="utf-8"/>	<!-- Return CharSet -->
+    <input type="hidden" name="ReqReserved" value=""/>	<!-- mall custom field -->
+
+    <!-- DO NOT CHANGE -->
+    <input type="hidden" name="EdiDate" value=""/> <!-- YYYYMMDDHHMISS -->
+    <input type="hidden" name="SignData" value=""/> <!-- signData -->
+  </table>
+  <a href="#" class="btn_blue" onClick="nicepayStart();">REQUEST</a>
+</form>
+</body>
+</html>
